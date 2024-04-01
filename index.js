@@ -17,6 +17,9 @@ app.use(
     })
   );
 app.use('/', router);
+router.get('/admin', (req, res) => {
+    res.send('Admin route accessed successfully');
+});
 app.use('/admin', router);
 Connection();
 app.listen(Port,()=>{
