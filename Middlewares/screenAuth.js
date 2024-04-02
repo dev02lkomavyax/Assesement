@@ -4,7 +4,7 @@ const checkPermissions = (req, res, next) => {
 
 
     // Check if the user has the required permission for the requested route
-    if (req.path === '/admin/projects' && req.body.permissions.projectScreen !== 'read') {
+    if (req.path === '/admin/create' && req.body.permissions.projectScreen !== 'read') {
         return res.status(403).json({ message: 'Forbidden: Access Denied' });
     }
      else if (req.path === '/admin/employees' && req.body.permissions.employeeScreen !== 'read') {

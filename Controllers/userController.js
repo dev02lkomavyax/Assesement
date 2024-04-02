@@ -158,36 +158,44 @@ module.exports.assignProjects = async (req, res) => {
     console.log(req.body);
     const { projectId, userId, status } = req.body;
     try {
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json('User not found');
-        }
-
         const project = await Project.findById(projectId);
         if (!project) {
             return res.status(404).json('Project not found');
         }
 
-        // Create a new assignedProject document
-        const assignedProject = new assignedProjectModel({
-            projectId: projectId,
-            employeeId: userId,
-            status: status || 'active'
-        });
+        // Iterate through each userId in the array
+        const savedAssignedProjects = [];
+        for (const id of userId) {
+            const user = await User.findById(id);
+            if (!user) {
+                console.log(`User ${id} not found, skipping assignment`);
+                continue;
+            }
 
-        // Save the assignedProject document
-        const savedAssignedProject = await assignedProject.save();
+            // Create a new assignedProject document for each userId
+            const assignedProject = new assignedProjectModel({
+                projectId: projectId,
+                employeeId: id,
+                status: status || 'active'
+            });
 
-        // Populate fields in the saved document
-        await assignedProjectModel.populate(savedAssignedProject, { path: 'projectId', model: 'Project' });
-        await assignedProjectModel.populate(savedAssignedProject, { path: 'employeeId', model: 'User' });
+            // Save the assignedProject document
+            const savedAssignedProject = await assignedProject.save();
 
-        return res.status(200).json("project was");
+            // Populate fields in the saved document
+            await assignedProjectModel.populate(savedAssignedProject, { path: 'projectId', model: 'Project' });
+            await assignedProjectModel.populate(savedAssignedProject, { path: 'employeeId', model: 'User' });
+
+            savedAssignedProjects.push(savedAssignedProject);
+        }
+
+        return res.status(200).json(savedAssignedProjects);
     } catch (error) {
         console.error(error);
         return res.status(500).json("Internal Server Error");
     }
 };
+
 
 
 
