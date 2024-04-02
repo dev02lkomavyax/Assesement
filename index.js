@@ -15,13 +15,16 @@ app.use(
       origin:"*" , 
       credentials: true,
     })
-  );
-app.use('/', router);
+);
+
 router.get('/admin', (req, res) => {
     res.send('Admin route accessed successfully');
 });
-app.use('/admin', router);
+
+app.use('/', router); // Use router middleware for all routes except /admin
+app.use('/admin', router); // Use router middleware for /admin routes
+
 Connection();
 app.listen(Port,()=>{
     console.log(`Server is running at ${Port}`)
-})
+});

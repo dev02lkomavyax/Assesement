@@ -2,7 +2,7 @@ const jwt= require('jsonwebtoken')
 const bcrypt=require('bcryptjs')
 const User = require('../Models/userSchema')
 const Project=require('../Models/projectSchema')
-
+const assignedProjectModel = require('../Models/assignedProjects')
 const Secret_key= "12346579"
 // For hashing the passwords
 const hashPass= async(password)=>{
@@ -130,40 +130,79 @@ module.exports.updateuser = async (req, res) => {
         return res.status(501).send("Something went wrong");
     }
 };
+// module.exports.assignProjects = async (req, res) => {
+//     console.log(req.body);
+//     const { projectId, userId } = req.body;
+//     try {
+//         const user= await User.findById(userId);
+//         if(!user){
+//             return res.status(401).json('User not found')
+//         }
+//         const project = await Project.findById({ _id:projectId });
+//         if (!project) {
+//             return res.status(401).json('This project is no longer available');
+//         }
+//         const assignedProject = await assignedProjects.findOne({ _id: userId }).populate({
+//             path: "project",
+//             model: "Project"
+//         });
+//         return res.status(200).json(assignedProject);
+//     } catch (error) {
+//         console.error(error);
+//         return res.status(500).json("Internal Server Error");
+//     }
+// };
+
+
 module.exports.assignProjects = async (req, res) => {
     console.log(req.body);
-    const { projectId, userId } = req.body;
+    const { projectId, userId, status } = req.body;
     try {
-        const user= await User.find({userId});
-        if(!user){
-            return res.status(401).json('User not found')
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json('User not found');
         }
 
-        const project = await Project.findOne({ _id:projectId });
+        const project = await Project.findById(projectId);
         if (!project) {
-            return res.status(401).json('This project is no longer available');
+            return res.status(404).json('Project not found');
         }
-        await User.findOneAndUpdate({ _id: userId }, { project: projectId }, { new: true });
-        const updatedUser = await User.findOne({ _id: userId }).populate({
-            path: "project",
-            model: "Project"
+
+        // Create a new assignedProject document
+        const assignedProject = new assignedProjectModel({
+            projectId: projectId,
+            employeeId: userId,
+            status: status || 'active'
         });
-        return res.status(200).json(updatedUser);
+
+        // Save the assignedProject document
+        const savedAssignedProject = await assignedProject.save();
+
+        // Populate fields in the saved document
+        await assignedProjectModel.populate(savedAssignedProject, { path: 'projectId', model: 'Project' });
+        await assignedProjectModel.populate(savedAssignedProject, { path: 'employeeId', model: 'User' });
+
+        return res.status(200).json("project was");
     } catch (error) {
         console.error(error);
         return res.status(500).json("Internal Server Error");
     }
 };
+
+
+
+
 module.exports.updateAuthorisation = async (req, res) => {
     console.log(req.body);
-    const { userId, read, write,all } = req.body;
+    const { userId,permissions} = req.body;
+    
     try {
         const user = await User.findById(userId);
         if (!user) {
             return res.status(401).json("User not found");
         }
         await User.findByIdAndUpdate(userId, {
-            $set: { "access.read": read, "access.write": write,"access.all":all }
+            $set: { "permissions.projectScreen":permissions.projectScreen, "permissions.employeeScreen":permissions.employeeScreen ,}
         });
         return res.status(201).json("Access updated successfully");
     } catch (error) {
