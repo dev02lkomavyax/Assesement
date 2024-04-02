@@ -153,49 +153,54 @@ module.exports.updateuser = async (req, res) => {
 //     }
 // };
 
-
 module.exports.assignProjects = async (req, res) => {
     console.log(req.body);
-    const { projectId, userId, status } = req.body;
+    const { projectIds, userIds, status } = req.body; // Changed projectId to projectIds
     try {
-        const project = await Project.findById(projectId);
-        if (!project) {
-            return res.status(404).json('Project not found');
-        }
+        const assignedProjects = [];
 
-        // Iterate through each userId in the array
-        const savedAssignedProjects = [];
-        for (const id of userId) {
-            const user = await User.findById(id);
-            if (!user) {
-                console.log(`User ${id} not found, skipping assignment`);
-                continue;
+        // Loop through each projectId
+        for (const projectId of projectIds) {
+            // Find the project by its ID
+            const project = await Project.findById(projectId);
+            if (!project) {
+                console.warn(`Project with ID ${projectId} not found`);
+                continue; // Skip this project and proceed with the next one
             }
 
-            // Create a new assignedProject document for each userId
-            const assignedProject = new assignedProjectModel({
-                projectId: projectId,
-                employeeId: id,
-                status: status || 'active'
-            });
+            // Loop through each userId
+            for (const userId of userIds) {
+                // Find the user by its ID
+                const user = await User.findById(userId);
+                if (!user) {
+                    console.warn(`User with ID ${userId} not found`);
+                    continue; // Skip this user and proceed with the next one
+                }
 
-            // Save the assignedProject document
-            const savedAssignedProject = await assignedProject.save();
+                // Create a new assignedProject document
+                const assignedProject = new assignedProjectModel({
+                    projectId: projectId,
+                    employeeId: userId,
+                    status: status || 'active'
+                });
 
-            // Populate fields in the saved document
-            await assignedProjectModel.populate(savedAssignedProject, { path: 'projectId', model: 'Project' });
-            await assignedProjectModel.populate(savedAssignedProject, { path: 'employeeId', model: 'User' });
+                // Save the assignedProject document
+                const savedAssignedProject = await assignedProject.save();
 
-            savedAssignedProjects.push(savedAssignedProject);
+                // Populate fields in the saved document using path
+                await savedAssignedProject.populate({ path: 'projectId', model: 'Project' });
+                await savedAssignedProject.populate({ path: 'employeeId', model: 'User' });
+
+                assignedProjects.push(savedAssignedProject);
+            }
         }
 
-        return res.status(200).json(savedAssignedProjects);
+        return res.status(200).json(assignedProjects);
     } catch (error) {
         console.error(error);
         return res.status(500).json("Internal Server Error");
     }
 };
-
 
 
 

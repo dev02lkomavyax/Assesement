@@ -1,6 +1,6 @@
 const express = require('express')
 const { signup, Login,updateuser,assignProjects,updateAuthorisation,deleteUser } = require('../Controllers/userController');
-const { createProject,deleteProject,updateProjects } = require('../Controllers/projectController');
+const { createProject,deleteProject,updateProjects, updateProjectAccess } = require('../Controllers/projectController');
 const checkPermissions= require('../Middlewares/screenAuth')
 const {projectScreenAuth,financeScreenAuth}=require("../Middlewares/projectScreenAuth")
 const adminAuth= require("../Utils/adminAuth")
@@ -17,6 +17,7 @@ router.post('/admin/project/assign-project',projectScreenAuth,assignProjects)
 router.post('/admin/project/create',projectScreenAuth,createProject)
 router.put('/admin/project/delete',projectScreenAuth,deleteProject)
 router.post('/admin/project/update',projectScreenAuth,updateProjects)
+router.post("/admin/projects/update-project-access",projectScreenAuth,updateProjectAccess)
 
 
 module.exports = router;
