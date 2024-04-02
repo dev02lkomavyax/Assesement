@@ -99,7 +99,7 @@ module.exports.Login=async(req,res)=>{
            }
            else{
                const token= jwt.sign({phone:phone,userId:user._id},Secret_key,{expiresIn:"1d"})
-              return res.status(201).send({success:'Login successful',token:token,userId:user._id})
+               return res.status(201).send({success:'Login successful',token:token,userId:user._id})
            }
        }
       }
@@ -155,17 +155,17 @@ module.exports.updateuser = async (req, res) => {
 
 module.exports.assignProjects = async (req, res) => {
     console.log(req.body);
-    const { projectIds, userIds, status } = req.body; // Changed projectId to projectIds
+    const { projectId, userIds, status } = req.body; // Changed projectId to projectIds
     try {
         const assignedProjects = [];
 
         // Loop through each projectId
-        for (const projectId of projectIds) {
+        // for (const projectId of projectIds) {
             // Find the project by its ID
             const project = await Project.findById(projectId);
             if (!project) {
                 console.warn(`Project with ID ${projectId} not found`);
-                continue; // Skip this project and proceed with the next one
+            return // Skip this project and proceed with the next one
             }
 
             // Loop through each userId
@@ -174,7 +174,7 @@ module.exports.assignProjects = async (req, res) => {
                 const user = await User.findById(userId);
                 if (!user) {
                     console.warn(`User with ID ${userId} not found`);
-                    continue; // Skip this user and proceed with the next one
+                    return // Skip this user and proceed with the next one
                 }
 
                 // Create a new assignedProject document
@@ -188,12 +188,12 @@ module.exports.assignProjects = async (req, res) => {
                 const savedAssignedProject = await assignedProject.save();
 
                 // Populate fields in the saved document using path
-                await savedAssignedProject.populate({ path: 'projectId', model: 'Project' });
-                await savedAssignedProject.populate({ path: 'employeeId', model: 'User' });
+                await savedAssignedProject.populate([{ path: 'projectId', model: 'Project' },{ path: 'employeeId', model: 'User' }]);
+                // await savedAssignedProject.populate({ path: 'employeeId', model: 'User' });
 
                 assignedProjects.push(savedAssignedProject);
             }
-        }
+        // }
 
         return res.status(200).json(assignedProjects);
     } catch (error) {
@@ -201,9 +201,6 @@ module.exports.assignProjects = async (req, res) => {
         return res.status(500).json("Internal Server Error");
     }
 };
-
-
-
 
 module.exports.updateAuthorisation = async (req, res) => {
     console.log(req.body);
