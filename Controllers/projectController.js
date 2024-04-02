@@ -1,28 +1,27 @@
 const Project= require('../Models/projectSchema')
 
-module.exports.createProject= async(req,res)=>{
+module.exports.createProject = async (req, res) => {
     try {
-        console.log(req.body)
-        const {name,description,startDate,deadline,clientName}=req.body;
-        const newprojectName = await Project.findOne({name});
-        if(newprojectName){
-            return res.status(400).send('Project already exists');
-        }
-        else{
-            const newProject =new Project({
-                name,
-                description,
-                startDate,
-                deadline,
-                clientName,
-            })
-            await newProject.save();
-            return res.status(201).json('Project Created Successfully'); 
-        }
+        console.log(req.body);
+        const { name, description, startDate, deadline, clientName } = req.body;
+        const newProject = new Project({
+            name,
+            description,
+            startDate,
+            deadline,
+            clientName
+        });
+
+        
+        await newProject.save();
+
+        return res.status(201).json({ message: 'Project Created Successfully', project: newProject });
     } catch (error) {
-        return res.status(501).json('something went wrong')
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
     }
-}
+};
+
 module.exports.deleteProject = async (req, res) => {
     console.log(req.body);
     const { projectId } = req.body;
