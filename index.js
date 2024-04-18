@@ -23,6 +23,7 @@ router.get('/admin', (req, res) => {
 
 app.use('/', router); // Use router middleware for all routes except /admin
 app.use('/admin', router); // Use router middleware for /admin routes
+// app.use('/verify',)
 
 Connection();
 app.listen(Port,()=>{

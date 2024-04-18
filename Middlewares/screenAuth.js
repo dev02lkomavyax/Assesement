@@ -1,30 +1,20 @@
 const checkPermissions = (req, res, next) => {
-    // const permissions = req.body.permissions;
-    // const role= req.body.role
-
+    // Logging cookies for debugging
+    // console.log(req.cookies, "this is cookies");
+    //  console.log(req.cookies.permissions)
+    const permissions = req.cookies.permissions;
+    const role = req.cookies.role;
 
     // Check if the user has the required permission for the requested route
-    if (req.path === '/admin/create' && req.body.permissions.projectScreen !== 'read') {
+    if (req.path === '/admin/project/create' && (!permissions || permissions.projectScreen !== 'read')) {
         return res.status(403).json({ message: 'Forbidden: Access Denied' });
-    }
-     else if (req.path === '/admin/employees' && req.body.permissions.employeeScreen !== 'read') {
+    } else if (req.path === '/admin/employees' && (!permissions || permissions.employeeScreen !== 'read')) {
         return res.status(403).json({ message: 'Forbidden: Access Denied' });
-    }
-    else if(req.path==='/admin' && req.body.role !=='admin'){
-        return res.status(403).json({message:"Forbidden: Access Denied"});
-    }
-    else{
-
+    } else if (req.path === '/admin' && role !== 'admin') {
+        return res.status(403).json({ message: 'Forbidden: Access Denied' });
+    } else {
         next();
     }
-    // if (req.body.role === 'admin') {
-    //     // User is an admin, proceed to the next middleware or route handler
-    //     next();
-    // } else {
-    //     // User is not an admin, return a forbidden error
-    //     return res.status(403).json({ message: 'Forbidden: Access Denied' });
-    // }
-
-
 };
-module.exports = checkPermissions
+
+module.exports = checkPermissions;

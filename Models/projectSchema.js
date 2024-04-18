@@ -17,9 +17,9 @@ deadline:{
     type:String,
     required:true,
 },
-clientName:{
-    type:String,
-    required:true,
+clientId:{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:"Client"
 }
 },
 {

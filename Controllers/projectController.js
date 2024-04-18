@@ -3,14 +3,14 @@ const assignedProjectModel = require('../Models/assignedProjects')
 
 module.exports.createProject = async (req, res) => {
     try {
-        console.log(req.body);
+        // console.log(req.body);
         const { name, description, startDate, deadline, clientName } = req.body;
         const newProject = new Project({
             name,
             description,
             startDate,
             deadline,
-            clientName
+           
         });
 
         

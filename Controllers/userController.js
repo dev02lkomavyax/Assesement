@@ -3,6 +3,7 @@ const bcrypt=require('bcryptjs')
 const User = require('../Models/userSchema')
 const Project=require('../Models/projectSchema')
 const assignedProjectModel = require('../Models/assignedProjects')
+const Client = require('../Models/clientModel')
 const Secret_key= "12346579"
 // For hashing the passwords
 const hashPass= async(password)=>{
@@ -75,37 +76,71 @@ module.exports.signup= async(req,res)=>{
     }
 }
 
-module.exports.Login=async(req,res)=>{
-    console.log(req.body)
-    const {phone,password}=req.body
+module.exports.Login = async (req, res) => {
+    console.log(req.body);
+    const { phone, password } = req.body;
 
     try {
-       const user =await User.findOne({phone})
-       if(!user){
-           return res.status(501).send('User doesn"t exist');
-       }
-       else
-      {
-       if(!phone || phone.length<10){
-           return res.status(501).send('Please enter your phone number');
-       }
-       else if(!password ||password.length<6){
-           return res.status(501).send('password is incorrect');
-       }
-       else{
-           const isValid= await comparePass(password,user.password)
-           if(!isValid){
-               return res.status(501).send('Your password is invalid');
-           }
-           else{
-               const token= jwt.sign({phone:phone,userId:user._id},Secret_key,{expiresIn:"1d"})
-               return res.status(201).send({success:'Login successful',token:token,userId:user._id})
-           }
-       }
-      }
+        const user = await User.findOne({ phone });
+        if (!user) {
+            return res.status(501).send('User doesn"t exist');
+        } else {
+            if (!phone || phone.length < 10) {
+                return res.status(501).send('Please enter your phone number');
+            } else if (!password || password.length < 6) {
+                return res.status(501).send('Password is incorrect');
+            } else {
+                const isValid = await comparePass(password, user.password);
+                if (!isValid) {
+                    return res.status(501).send('Your password is invalid');
+                } else {
+                    const token = jwt.sign({ phone: phone, userId: user._id }, Secret_key, { expiresIn: "1d" });
+                    res.cookie('token', token, { httpOnly: true });
+                    res.cookie('userId', user._id, { httpOnly: true });
+                    res.cookie('role', user.role, { httpOnly: true });
+                    res.cookie('permissions', user.permissions, { httpOnly: true });
+                    return res.status(201).json({ success: 'Login successful' });
+                }
+            }
+        }
     } catch (error) {
-       res.status(501).send('something went wrong');
-       console.log(error)
+        console.error(error);
+        return res.status(501).send('Something went wrong');
+    }
+};
+
+// Client signup
+module.exports.createClient= async(req,res)=>{
+     console.log(req.body)
+     const {phone,name,password}=req.body;
+    try {
+        const matchedClient= await Client.findOne({phone});
+        if(matchedClient){
+            return res.status(401).json({
+                message:"Client Already exists",
+                status:'false'
+            })
+        }
+        else if(!name || name.length<3 ||!password || password.length<6 || !phone || phone.length !== 10){
+            return res.status(401).json({
+                message:"Please enter the correct details",
+                status:'false',
+            })
+        }
+        else{
+            const hashedPass=await hashPass(password);
+            const newClient = new Client({phone:phone,name:name,password:hashedPass})
+            await newClient.save();
+            return res.status(201).json({
+                message:"Client Created",
+                status:'true',
+            })
+        }
+    } catch (error) {
+        return res.status(501).json({
+            message:"An Internal Server Error",
+            status:"false"
+        })
     }
 }
 module.exports.updateuser = async (req, res) => {
@@ -130,29 +165,6 @@ module.exports.updateuser = async (req, res) => {
         return res.status(501).send("Something went wrong");
     }
 };
-// module.exports.assignProjects = async (req, res) => {
-//     console.log(req.body);
-//     const { projectId, userId } = req.body;
-//     try {
-//         const user= await User.findById(userId);
-//         if(!user){
-//             return res.status(401).json('User not found')
-//         }
-//         const project = await Project.findById({ _id:projectId });
-//         if (!project) {
-//             return res.status(401).json('This project is no longer available');
-//         }
-//         const assignedProject = await assignedProjects.findOne({ _id: userId }).populate({
-//             path: "project",
-//             model: "Project"
-//         });
-//         return res.status(200).json(assignedProject);
-//     } catch (error) {
-//         console.error(error);
-//         return res.status(500).json("Internal Server Error");
-//     }
-// };
-
 module.exports.assignProjects = async (req, res) => {
     console.log(req.body);
     const { projectId, userIds, status } = req.body; // Changed projectId to projectIds
@@ -233,6 +245,35 @@ module.exports.deleteUser=async(req,res)=>{
         
     } catch (error) {
         return res.status(501).json("Internal Server Error");
+    }
+}
+module.exports.resetPassword=async(req,res)=>{
+    console.log(req.body);  
+    const {userId,password}=req.body;
+    try {
+        
+        const user= await User.findById(userId);
+        if(!user){
+            return res.status(401).json({
+                message:'user not found',
+                status:"false"
+            })
+        }
+        else if(!password || password.length<=6){
+
+            const hashedPass=await hashPass(password);
+            user.password=hashedPass;
+            const updatedUser= await user.save();
+            return res.status(201).json({
+                message:"Password reset successfuly",
+                status:'true'
+            },updatedUser)
+        }
+    } catch (error) {
+        return res.status(501).json({
+            message:"Internal server error",
+            status:"false"
+        })
     }
 }
 
