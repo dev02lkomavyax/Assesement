@@ -15,6 +15,10 @@ const clientSchema=mongoose.Schema({
         required:true,
         
     },
+    projectID:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Project"
+    }
 })
 
 const Client= mongoose.model("Client",clientSchema);

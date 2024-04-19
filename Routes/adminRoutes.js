@@ -14,8 +14,8 @@ admin_route.post('/updateUser',updateuser)
 admin_route.post('/updateAccess',adminAuth,updateAuthorisation)
 admin_route.put('/removeuser',adminAuth,deleteUser)
 admin_route.post('/reset-password',adminAuth,resetPassword)
-admin_route.post('/client/assign-projects',adminAuth,assignProjectToClient)
-admin_route.post("/clientSignup",adminAuth,createClient)
+admin_route.post('/assign-projects-clients',assignProjectToClient)
+admin_route.post("/clientSignup",createClient)
 
 
 

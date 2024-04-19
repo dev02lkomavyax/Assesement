@@ -3,6 +3,7 @@ const jwt= require('jsonwebtoken')
 const bcrypt=require('bcryptjs');
 const assignedProjectModel = require("../Models/assignedProjects");
 const Project = require("../Models/projectSchema");
+
 // For comparing the password while login
 const comparePass= async(password,dbPassword)=>{
     return await bcrypt.compare(password,dbPassword);
@@ -71,33 +72,45 @@ module.exports.clientLogin = async (req, res) => {
     }
 };
 
-module.exports.assignProjectToClient=async(req,res)=>{
-           console.log(req.body)
-           const{projectId,clientId}=req.body
+module.exports.assignProjectToClient = async (req, res) => {
+    console.log(req.body);
+    const { projectId, clientId } = req.body;
+
     try {
-        const assignedProject= await Project.findOneAndUpdate({ projectId},
-            {clientId:clientId}).populate({
-            path:'clientId',
-            model:'Client'
-        })
-        return res.status(200).json({
-            message: "Project successfuly assigned to clients",
-            status: true,
-            assignedProject:assignedProject,
+        const matchedProject = await Project.findOneAndUpdate(
+            { _id: projectId }, 
+            { clientId: clientId },
+        ).populate({
+            path: 'clientId',
+            model: 'Client'
         });
-        
+
+        if (!matchedProject) {
+            return res.status(404).json({
+                message: "No project found",
+                status: false
+            });
+        }
+
+        return res.status(200).json({
+            message: "Project successfully assigned to client",
+            status: true,
+            matchedProject: matchedProject
+        });
+
     } catch (error) {
-        return res.status(501).json({
-            message:"Internal Server Error",
-            status:false,
-        })
+        console.error('Error assigning project to client:', error);
+        return res.status(500).json({
+            message: "Internal Server Error",
+            status: false
+        });
     }
-}
+};
 module.exports.getClientProjects=async(req,res)=>{
-    const {clientId,projectId}=req.body;
+    const {clientId}=req.body;
     console.log(req.body)
     try {
-        const matchedClient= await Project.find({projectId,clientId})
+        const matchedClient= await Project.find({clientId})
         if(!matchedClient){
             return res.status(401).json({
                 message:'No project or client found',

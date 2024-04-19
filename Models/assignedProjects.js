@@ -11,11 +11,6 @@ const assignedProjectSchema = mongoose.Schema({
     required: true,
     ref: 'User'
    },
-   clientId:{
-    type:mongoose.Schema.Types.ObjectId,
-    // required:true,
-    ref:"Client"
-   },
    status: {
     type: String,
     enum: ['blocked', 'active', 'completed'],

@@ -3,8 +3,10 @@ module.exports.projectScreenAuth = (req, res, next) => {
     const role= req.cookies.role
     console.log(role)
     console.log(permissions)
-    if (permissions.projectScreen==="none") {
-        // User is not an admin, return a forbidden error
+    if(!permissions || !role){
+        return res.status(403).json({message: 'Forbidden: You do not have the access for this page' })
+    }
+    else if (permissions.projectScreen==="none") {
         return res.status(403).json({ message: 'Forbidden: You do not have the access for this page' });
         
     } else {
