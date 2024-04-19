@@ -2,11 +2,11 @@
   "name": "server",
   "version": "1.0.0",
   "description": "test project",
-  "main": "index.js",
+  "main": "app.js",
   "type": "commonjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon index.js"
+    "start": "nodemon app.js"
   },
   "author": "Aditya Sharma",
   "license": "ISC",

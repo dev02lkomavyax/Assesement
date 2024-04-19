@@ -1,8 +1,7 @@
 const express = require('express')
 const { signup, Login,updateuser,assignProjects,updateAuthorisation,deleteUser, resetPassword,createClient } = require('../Controllers/userController');
 const { createProject,deleteProject,updateProjects, updateProjectAccess } = require('../Controllers/projectController');
-const {clientLogin, assignProjectToClient, getClientProjects}=require('../Controllers/clientController')
-const checkPermissions= require('../Middlewares/screenAuth')
+const { assignProjectToClient, getClientProjects}=require('../Controllers/clientController')
 const {projectScreenAuth,financeScreenAuth}=require("../Middlewares/projectScreenAuth")
 const adminAuth= require("../Utils/adminAuth")
 const auth= require('../Middlewares/auth')
@@ -16,11 +15,9 @@ router.post('/admin/updateAccess',adminAuth,updateAuthorisation)
 router.put('/admin/removeuser',adminAuth,deleteUser)
 router.post('/admin/reset-password',adminAuth,resetPassword)
 router.post('/admin/client/assign-projects',adminAuth,assignProjectToClient)
-
-//for the client 
 router.post("/admin/clientSignup",adminAuth,createClient)
-router.post('/clientLogin',clientLogin)
-router.get('/client/get-projects',getClientProjects)
+
+
 
 
 
