@@ -1,8 +1,13 @@
 const express= require('express')
-const {Login} = require('../Controllers/userController')
 
-const employee_route=express.Router()
+// Internal imports
+const userController= require('../Controllers/userController')
 
-employee_route.post('/login',Login)
+const router=express.Router()
 
-module.exports=employee_route;
+router.post('/login',userController.Login)
+
+
+
+
+module.exports=router;

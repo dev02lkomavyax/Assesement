@@ -1,11 +1,13 @@
-const {clientLogin, getClientProjects}=require('../Controllers/clientController')
 const express= require('express')
+
+// internal imports
+const clientController= require('../Controllers/clientController')
 const {projectScreenAuth}= require('../Middlewares/projectScreenAuth')
 
 
-const client_route= express.Router()
+const router= express.Router()
 
-client_route.post('/clientLogin',clientLogin)
-client_route.get('/get-projects',projectScreenAuth,getClientProjects)
+router.post('/clientLogin',clientController.clientLogin)
+router.get('/get-projects',projectScreenAuth,clientController.getClientProjects)
 
-module.exports= client_route
+module.exports= router

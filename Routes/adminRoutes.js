@@ -1,21 +1,24 @@
 const express = require('express')
-const { signup, Login,updateuser,assignProjects,updateAuthorisation,deleteUser, resetPassword,createClient } = require('../Controllers/userController');
-const { createProject,deleteProject,updateProjects, updateProjectAccess } = require('../Controllers/projectController');
-const { assignProjectToClient, getClientProjects}=require('../Controllers/clientController')
+
+// internal imports
+const userController=require('../Controllers/userController')
+const projectController=require('../Controllers/projectController')
+const clientController=require('../Controllers/clientController')
 const {projectScreenAuth,financeScreenAuth}=require("../Middlewares/projectScreenAuth")
 const adminAuth= require("../Utils/adminAuth")
 const auth= require('../Middlewares/auth')
-const admin_route= express.Router()
+
+const router= express.Router()
 
 //for employee signup and login and so on
-admin_route.post('/signup',signup)
-admin_route.post('/login',Login)
-admin_route.post('/updateUser',updateuser)
-admin_route.post('/updateAccess',adminAuth,updateAuthorisation)
-admin_route.put('/removeuser',adminAuth,deleteUser)
-admin_route.post('/reset-password',adminAuth,resetPassword)
-admin_route.post('/assign-projects-clients',assignProjectToClient)
-admin_route.post("/clientSignup",createClient)
+router.post('/signup',userController.signup)
+router.post('/login',userController.Login)
+router.post('/update-user',userController.updateuser)
+router.post('/update-access',adminAuth,userController.updateAuthorisation)
+router.put('/remove-user',adminAuth,userController.deleteUser)
+router.post('/reset-password',adminAuth,userController.resetPassword)
+router.post('/assign-projects-clients',clientController.assignProjectToClient)
+router.post("/client-signup",userController.createClient)
 
 
 
@@ -23,11 +26,11 @@ admin_route.post("/clientSignup",createClient)
 
 // for projects
 
-admin_route.post('/assign-project',projectScreenAuth,assignProjects)
-admin_route.post('/create',projectScreenAuth,createProject)
-admin_route.put('/delete',projectScreenAuth,deleteProject)
-admin_route.post('/update',projectScreenAuth,updateProjects)
-admin_route.post("/update-project-access",projectScreenAuth,updateProjectAccess)
+router.post('/assign-project',projectScreenAuth,userController.assignProjects)
+router.post('/create',projectScreenAuth,projectController.createProject)
+router.put('/delete',projectScreenAuth,projectController.deleteProject)
+router.post('/update',projectScreenAuth,projectController.updateProjects)
+router.post("/update-project-access",projectScreenAuth,projectController.updateProjectAccess)
 
 
-module.exports = admin_route;
+module.exports = router;

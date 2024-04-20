@@ -1,10 +1,18 @@
+// importing packages
 const jwt= require('jsonwebtoken')
 const bcrypt=require('bcryptjs')
+const dotenv=require('dotenv').config();
+
+// internal imports
 const User = require('../Models/userSchema')
 const Project=require('../Models/projectSchema')
 const assignedProjectModel = require('../Models/assignedProjects')
-const Client = require('../Models/clientModel')
+const Client = require('../Models/clientModel');
+const catchAsync = require('../Utils/catchAsync');
 const Secret_key= "12346579"
+
+
+
 // For hashing the passwords
 const hashPass= async(password)=>{
     return await bcrypt.hash(password,10)
@@ -43,13 +51,12 @@ const comparePass= async(password,dbPassword)=>{
 //     }
 // }
 
-module.exports.signup= async(req,res)=>{
+const signup= catchAsync(async(req,res)=>{
     console.log(req.body)
     console.log(req.cookies)
-    const customUser= req.body;
-    const newUser= new User(customUser)
     try {
         const {name,phone,password,designation,role}= req.body
+
         const user = await User.findOne({phone})
         if(user){
             return res.status(501).send('Phone number Already exists')
@@ -74,9 +81,9 @@ module.exports.signup= async(req,res)=>{
         return res.status(501).send('an error occured')
 
     }
-}
+})
 
-module.exports.Login = async (req, res) => {
+const Login = catchAsync(async (req, res) => {
     console.log(req.body);
     const { phone, password } = req.body;
 
@@ -107,10 +114,10 @@ module.exports.Login = async (req, res) => {
         console.error(error);
         return res.status(501).send('Something went wrong');
     }
-};
+});
 
 // Client signup
-module.exports.createClient= async(req,res)=>{
+const createClient= catchAsync(async(req,res)=>{
      console.log(req.body)
      const {phone,name,password}=req.body;
     try {
@@ -142,9 +149,8 @@ module.exports.createClient= async(req,res)=>{
             status:"false"
         })
     }
-}
-module.exports.updateuser = async (req, res) => {
-    try {
+})
+const updateuser = catchAsync(async(req, res) => {
         console.log(req.body);
         const { userId, name, password, phone, designation, role,status } = req.body;
         
@@ -161,14 +167,10 @@ module.exports.updateuser = async (req, res) => {
             );
             return res.status(201).send('User details updated successfully');
         }
-    } catch (error) {
-        return res.status(501).send("Something went wrong");
-    }
-};
-module.exports.assignProjects = async (req, res) => {
+});
+const assignProjects = catchAsync(async (req, res) => {
     console.log(req.body);
-    const { projectId, userIds, status } = req.body; // Changed projectId to projectIds
-    try {
+    const { projectId, userIds, status } = req.body;
         const assignedProjects = [];
 
         // Loop through each projectId
@@ -208,17 +210,12 @@ module.exports.assignProjects = async (req, res) => {
         // }
 
         return res.status(200).json(assignedProjects);
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json("Internal Server Error");
-    }
-};
+});
 
-module.exports.updateAuthorisation = async (req, res) => {
+const updateAuthorisation = catchAsync(async (req, res) => {
     console.log(req.body);
     const { userId,permissions} = req.body;
-    
-    try {
+
         const user = await User.findById(userId);
         if (!user) {
             return res.status(401).json("User not found");
@@ -227,15 +224,11 @@ module.exports.updateAuthorisation = async (req, res) => {
             $set: { "permissions.projectScreen":permissions.projectScreen, "permissions.employeeScreen":permissions.employeeScreen ,}
         });
         return res.status(201).json("Access updated successfully");
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json("Internal server error");
-    }
-};
-module.exports.deleteUser=async(req,res)=>{
+});
+const deleteUser= catchAsync(async(req,res)=>{
     console.log(req.body)
     const {userId}=req.body;
-    try {
+
         const user = await User.find({_id:userId})
         if(!user){
             return res.status(401).json("User doesn't exist")
@@ -243,14 +236,11 @@ module.exports.deleteUser=async(req,res)=>{
       await User.findByIdAndDelete({_id:userId})
       return res.status(201).json("user removed successfully")
         
-    } catch (error) {
-        return res.status(501).json("Internal Server Error");
-    }
-}
-module.exports.resetPassword=async(req,res)=>{
+})
+const resetPassword=catchAsync(async(req,res)=>{
     console.log(req.body);  
     const {userId,password}=req.body;
-    try {
+   
         
         const user= await User.findById(userId);
         if(!user){
@@ -269,12 +259,16 @@ module.exports.resetPassword=async(req,res)=>{
                 status:'true'
             },updatedUser)
         }
-    } catch (error) {
-        return res.status(501).json({
-            message:"Internal server error",
-            status:"false"
-        })
-    }
+})
+module.exports={
+    signup,
+    Login,
+    assignProjects,
+    createClient,
+    updateuser,
+    updateAuthorisation,
+    deleteUser,
+    resetPassword
 }
 
 

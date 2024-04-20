@@ -1,8 +1,8 @@
 const Project= require('../Models/projectSchema')
-const assignedProjectModel = require('../Models/assignedProjects')
+const assignedProjectModel = require('../Models/assignedProjects');
+const catchAsync = require('../Utils/catchAsync');
 
-module.exports.createProject = async (req, res) => {
-    try {
+const createProject = catchAsync(async (req, res) => {
         // console.log(req.body);
         const { name, description, startDate, deadline, clientName } = req.body;
         const newProject = new Project({
@@ -17,30 +17,21 @@ module.exports.createProject = async (req, res) => {
         await newProject.save();
 
         return res.status(201).json({ message: 'Project Created Successfully', project: newProject });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal Server Error' });
-    }
-};
+});
 
-module.exports.deleteProject = async (req, res) => {
+const deleteProject = catchAsync(async (req, res) => {
     console.log(req.body);
     const { projectId } = req.body;
-    try {
         const project = await Project.findOne({ _id: projectId });
         if (!project) {
             return res.status(400).json('Project not found');
         }
         await Project.findOneAndDelete({ _id: projectId });
         return res.status(201).json('Project deleted successfully');
-    } catch (error) {
-        return res.status(501).json('Something went wrong');
-    }
-};
+});
 
-module.exports.updateProjects= async(req,res)=>{
+const updateProjects= catchAsync(async(req,res)=>{
  
-    try {
         console.log(req.body)
         const{projectId,projectName,description,startDate,deadline,clientName}=req.body
         const project=await Project.findOne({_id:projectId})
@@ -51,15 +42,10 @@ module.exports.updateProjects= async(req,res)=>{
             await Project.findOneAndUpdate({_id:projectId,projectName,description,startDate,deadline,clientName})
             return res.status(201).send('Project updated successfuly')
         }
-        
-    } catch (error) {
-        return res.status(501).send("something went wrong");
-    }
-}
-module.exports.updateProjectAccess = async (req, res) => {
+});
+const updateProjectAccess = catchAsync(async (req, res) => {
     console.log(req.body);
     const { userId, projectId, accessType } = req.body;
-    try {
         const project = await assignedProjectModel.findOneAndUpdate({ employeeId: userId, projectId: projectId });
 
         if (!project) {
@@ -78,11 +64,10 @@ module.exports.updateProjectAccess = async (req, res) => {
                 project: project
             });
         }
-    } catch (error) {
-        console.error(error);
-        return res.status(501).json({
-            message: "Something went wrong",
-            success: false
-        });
-    }
-};
+});
+module.exports= {
+    createProject,
+    deleteProject,
+    updateProjectAccess,
+    updateProjects
+}

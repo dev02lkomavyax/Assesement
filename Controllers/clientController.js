@@ -1,7 +1,11 @@
+
+
+// Internal imports
 const Client = require("../Models/clientModel")
+const catchAsync=require('../Utils/catchAsync')
 const jwt= require('jsonwebtoken')
 const bcrypt=require('bcryptjs');
-const assignedProjectModel = require("../Models/assignedProjects");
+// const assignedProjectModel = require("../Models/assignedProjects");
 const Project = require("../Models/projectSchema");
 
 // For comparing the password while login
@@ -11,7 +15,7 @@ const comparePass= async(password,dbPassword)=>{
 }
 const Secret_key= "12346579"
 
-// module.exports.clientLogin= async(req,res)=>{
+// const clientLogin= async(req,res)=>{
 
 //     console.log(req.body)
 //     const{phone,password}=req.body
@@ -41,11 +45,10 @@ const Secret_key= "12346579"
 //         })
 //     }
 // }
-module.exports.clientLogin = async (req, res) => {
+const clientLogin = catchAsync(async (req, res) => {
     console.log(req.body);
     const { phone, password } = req.body;
 
-    try {
         const matchedClient = await Client.findOne({ phone });
         if (!matchedClient) {
             return res.status(404).json({
@@ -63,20 +66,12 @@ module.exports.clientLogin = async (req, res) => {
         res.cookie('token', token, { httpOnly: true });
         res.cookie('clientId', matchedClient._id, { httpOnly: true });
         return res.status(201).json({ success: 'Login successful' });
-    } catch (error) {
-        console.error(error);
-        return res.status(501).json({
-            message: "Internal Server Error",
-            status: false,
-        });
-    }
-};
+    
+})
 
-module.exports.assignProjectToClient = async (req, res) => {
+const assignProjectToClient = catchAsync(async (req, res) => {
     console.log(req.body);
     const { projectId, clientId } = req.body;
-
-    try {
         const matchedProject = await Project.findOneAndUpdate(
             { _id: projectId }, 
             { clientId: clientId },
@@ -84,6 +79,7 @@ module.exports.assignProjectToClient = async (req, res) => {
             path: 'clientId',
             model: 'Client'
         });
+       
 
         if (!matchedProject) {
             return res.status(404).json({
@@ -98,18 +94,11 @@ module.exports.assignProjectToClient = async (req, res) => {
             matchedProject: matchedProject
         });
 
-    } catch (error) {
-        console.error('Error assigning project to client:', error);
-        return res.status(500).json({
-            message: "Internal Server Error",
-            status: false
-        });
-    }
-};
-module.exports.getClientProjects=async(req,res)=>{
+});
+const getClientProjects=catchAsync(async(req,res)=>{
     const {clientId}=req.body;
     console.log(req.body)
-    try {
+    
         const matchedClient= await Project.find({clientId})
         if(!matchedClient){
             return res.status(401).json({
@@ -123,10 +112,11 @@ module.exports.getClientProjects=async(req,res)=>{
                 projects:matchedClient
             })
         }
-    } catch (error) {
-        return res.status(501).json({
-            message:'Internal server error',
-            status:'false'
-        })
-    }
+    
+})
+
+module.exports={
+    clientLogin,
+    assignProjectToClient,
+    getClientProjects
 }

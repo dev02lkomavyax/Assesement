@@ -1,14 +1,19 @@
 const express = require('express');
+
+// internal imports
 const app= require('../server.js')
-const admin_route = require('../Routes/adminRoutes.js');
-const client_route = require('../Routes/clientRoutes.js');
-const employee_route = require('../Routes/employeeRoutes.js');
+const adminRoutes = require('../Routes/adminRoutes.js');
+const clientRoutes = require('../Routes/clientRoutes.js');
+const employeeRoutes = require('../Routes/employeeRoutes.js');
+const globalErrorHandler=require('../Controllers/errorController.js')
 
 // Routes
-app.use('/admin/projects', admin_route);
-app.use('/admin', admin_route);
-app.use('/client', client_route);
-app.use('/employee', employee_route);
+app.use('/admin/projects', adminRoutes);
+app.use('/admin', adminRoutes);
+app.use('/client', clientRoutes);
+app.use('/employee', employeeRoutes);
 
+// using error handler
+app.use(globalErrorHandler)
 
 module.exports = app;
